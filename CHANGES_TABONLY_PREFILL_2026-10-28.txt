@@ -1,0 +1,46 @@
+PATCH: tabonly-prefill — 2026-10-28 (nen 0a.zip)
+Marker: PATCH_MARKER_2026-10-28-tabonly-prefill (2 dong trong browser_engine.py)
+
+VAN DE:
+- Domain worker chay che do stateless tab_only: account="" va chi doc username
+  da co san trong tab (_read_tab_username). Tab moi sau restart co o username
+  TRONG -> inner tra ngay "Tab has no prefilled account" TAB_UNAVAILABLE
+  trong ~25ms, khong dien form, khong toi slider. Ma lap lai 5 lan roi bi bo
+  khi het ngan sach defer. LLwin (22:43 27/10, 4 ma) va HI88 (22:42, 23:03,
+  00:06 28/10) chet dung kieu nay, du account DA CAU HINH SAN trong config
+  (LLwin=dad1, HI88=hugolan012) — che do tab_only khong he doc cau hinh do.
+- Viec go tay dad1 vao tab chi chua tam thoi: restart mo tab moi la mat,
+  va bot van khong tu lam gi khi khong co ma moi toi.
+
+SUA (chi browser_engine.py, 1 cho duy nhat trong _submit_code_browser_locked_inner):
+- Khi tab_only ma _read_tab_username tra "" , bot lay username dau tien tu
+  get_effective_domain_accounts(domain) (LLwin->dad1, HI88->hugolan012)
+  va ghi thang vao o username tren tab bang _prefill_tab_username
+  (prototype setter + input/change, giong _TAB_ONLY_FILL_JS de React nhan,
+  roi doc lai de xac nhan). Ghi duoc thi submit tiep nhu binh thuong.
+- Tab DA CO username: khong doi gi ca (QQ88 kuuteo012, XX88 dad131 giu nguyen).
+- Khong co account cau hinh, hoac ghi that bai: giu nguyen hanh vi cu
+  (TAB_UNAVAILABLE), khong te hon truoc.
+
+KHONG SUA TRONG BAN NAY:
+- Slider LLwin (6 lan CHUA QUA ngay 27/10) van la loi rieng, se xuat hien
+  SAU khi qua cua username. Ban nay chi diet cai chet ~25ms o cua.
+
+CAI DAT:
+1. Dung bot truoc.
+2. Trong thu muc bot, doi ten file cu thanh browser_engine.py.0a-bak
+   (hoac xoa), roi copy browser_engine.py trong zip nay vao.
+3. Kiem tra: findstr /C:"PATCH_MARKER_2026-10-28-tabonly-prefill" browser_engine.py
+   -> phai ra 2 dong.
+4. Chay bot lai nhu binh thuong. KHONG can go tay username vao tab nua,
+   KHONG can ngoi canh tin LLwin rieng.
+
+KIEM CHUNG:
+- Ngay lan submit dau tien sau restart ma tab dang trong, log phai co dong:
+  [llwincode.com] Tab username trong - da dien san dad1 tu cau hinh (tabonly-prefill)
+  (tuong tu hi88-freecode.pages.dev ... hugolan012).
+- Neu khong thay dong do ma van TAB_UNAVAILABLE account trong: ghi that bai,
+  gui lai dong log cua ma do — nghia la selector/JS can sua, khong phai cho doi.
+- Da test o day: py_compile OK, CRLF giu nguyen, diff chi dung 2 hunk chu dich,
+  giai username tu config that cua 0a ra dung dad1/hugolan012. Submit tren
+  trinh duyet that chua test o day — lan submit dau tien sau restart la bang chung.
